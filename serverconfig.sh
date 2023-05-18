@@ -42,38 +42,38 @@ apt-get install perl libnet-ssleay-perl openssl libauthen-pam-perl libpam-runtim
 
 
 
-
 if [ $varInstallDocker = y ]; then
 echo "Installing Docker..."
-#---Install Docker
 
-#docker
-curl -fsSL https://get.docker.com -o get-docker.sh
-sh get-docker.sh
-usermod -aG docker $(logname)
-usermod -aG dialout $(logname)
+	curl -fsSL https://get.docker.com -o get-docker.sh
+	sh get-docker.sh
+	usermod -aG docker $(logname)
+	usermod -aG dialout $(logname)
 
 fi
-
 
 if [ $varInstallDockerCompose = y ]; then
-echo "Installing Docker-Compose..."
-#---Install Docker-Compose
-curl -SL https://github.com/docker/compose/releases/download/v2.16.0/docker-compose-linux-armv7 -o /usr/local/bin/docker-compose
-chmod +x /usr/local/bin/docker-compose
+	echo "Installing Docker-Compose..."
+
+	case $(uname -m) in
+	   "x86_64") curl -SL https://github.com/docker/compose/releases/download/v2.18.1/docker-compose-linux-x86_64 -o /usr/local/bin/docker-compose
+	   ;;
+	   "armv71") curl -SL https://github.com/docker/compose/releases/download/v2.18.1/docker-compose-linux-armv7 -o /usr/local/bin/docker-compose
+	   ;;
+	   "aarch64") curl -SL https://github.com/docker/compose/releases/download/v2.18.1/docker-compose-linux-aarch64 -o /usr/local/bin/docker-compose
+	   ;;
+	esac
+
+	chmod +x /usr/local/bin/docker-compose
 
 fi
 
-
-
-
-
-
 if [ $varInstallWebmin = y ]; then
-echo "Installing Webmin..."
-#---Install Webmin
-wget https://gigenet.dl.sourceforge.net/project/webadmin/webmin/2.010/webmin_2.010_all.deb
-dpkg --install webmin_2.010_all.deb
+	echo "Installing Webmin..."
+
+	curl -o setup-repos.sh https://raw.githubusercontent.com/webmin/webmin/master/setup-repos.sh
+	sh setup-repos.sh
+	apt-get install webmin
 
 fi
 
