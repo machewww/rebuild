@@ -1,3 +1,6 @@
+#Run in Device
+#curl -Lso serverconfig.sh "https://raw.githubusercontent.com/machewww/rebuild/main/serverconfig.sh" && chmod 700 serverconfig.sh
+#./serverconfig.sh install
 #!/bin/bash
 
 while true; do
