@@ -1,4 +1,5 @@
 #Set IP Info
+echo "This script will break your ssh connection. Reconnect after it is run."
 
 case $(cat /sys/class/net/eth0/address) in
    "00:15:5d:05:02:02") echo "D01"
