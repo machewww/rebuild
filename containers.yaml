@@ -1,0 +1,93 @@
+version: '3.1'
+
+services:
+
+ portainer:
+  image: portainer/portainer-ce
+  container_name: portainer
+  restart: unless-stopped
+  environment:
+   - TZ=America/Toronto 
+  profiles:
+   - portainer
+   - all
+  ports:
+   - "9000:9000"
+  volumes:
+   - /etc/localtime:/etc/localtime:ro
+   - /var/run/docker.sock:/var/run/docker.sock
+   - /home/${USERNAME}/portainer:/data
+
+ nginx-proxy-manager:
+  image: jc21/nginx-proxy-manager:latest
+  container_name: nginx-proxy-manager
+  restart: unless-stopped
+  environment:
+   - TZ=America/Toronto 
+  profiles:
+   - nginx-proxy-manager
+   - all
+  ports:
+   - "80:80"
+   - "81:81"
+   - "443:443"
+  volumes:
+   - /home/${USERNAME}/nginx-proxy-manager/data:/data
+   - /home/${USERNAME}/nginx-proxy-manager/letsencrypt:/etc/letsencrypt
+
+ VSFTPd:
+  image: fauria/vsftpd
+  container_name: vsftpd
+  restart: unless-stopped
+  environment:
+   - TZ=America/Toronto 
+   - FTP_USER=${varVSFTPdUser}
+   - FTP_PASS=${varVSFTPdPass}
+   - LOCAL_UMASK=022
+   - PASV_ADDRESS=127.0.0.1
+   - PASV_MIN_PORT=31000
+   - PASV_MAX_PORT=31010
+  profiles:
+   - vsftpd
+   - all
+  ports:
+   - "20:20"
+   - "21:21"
+   - "31000-31010:31000-31010"
+  volumes:
+   - /home/${USERNAME}/VSFTPd:/home/vsftpd
+
+ wordpress:
+  image: wordpress
+  restart: unless-stopped
+  profiles:
+   - wpsite01
+   - all
+  depends_on:
+  - db
+  ports:
+   - 8888:80
+  environment:
+   - TZ=America/Toronto
+   - WORDPRESS_DB_HOST=db
+   - WORDPRESS_DB_USER=${varWORDPRESS_DB_USER}
+   - WORDPRESS_DB_PASSWORD=${varWORDPRESS_DB_PASSWORD}
+   - WORDPRESS_DB_NAME=wordpress
+  volumes:
+    - /home/${USERNAME}/wpsite01/wordpress:/var/www/html
+    - /home/${USERNAME}/VSFTPd/${varVSFTPdUser}:/var/www/html/quinte
+    
+ db:
+  image: mysql:5.7
+  restart: unless-stopped
+  profiles:
+   - wpsite01
+   - all
+  environment:
+   - MYSQL_DATABASE=wordpress
+   - MYSQL_USER=${varWORDPRESS_DB_USER}
+   - MYSQL_PASSWORD=${varWORDPRESS_DB_PASSWORD}
+   - MYSQL_ROOT_PASSWORD=${varMYSQL_ROOT_PASSWORD}
+  volumes:
+   - /home/${USERNAME}/wpsite01/mysql:/var/lib/mysql
+   - /home/${USERNAME}/wpsite01/mysql_restore/mysql/wordpress.sql:/docker-entrypoint-initdb.d/init.sql
