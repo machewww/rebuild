@@ -91,3 +91,151 @@ services:
   volumes:
    - /home/${USERNAME}/wpsite01/mysql:/var/lib/mysql
    - /home/${USERNAME}/wpsite01/mysql_restore/mysql/wordpress.sql:/docker-entrypoint-initdb.d/init.sql
+
+ radarr:
+  image: linuxserver/radarr:latest
+  restart: unless-stopped
+  environment:
+   - PUID=1000
+   - PGID=1000
+   - TZ=America/Toronto 
+  profiles:
+   - all
+   - nzb
+  ports:
+   - "7878:7878"
+  volumes:
+   - /etc/localtime:/etc/localtime:ro
+   - /home/${USERNAME}/radarr/config:/config
+   - /mnt/storage/downloads:/downloads
+   - /mnt/videos:/videos
+
+ sonarr:
+  image: linuxserver/sonarr:latest
+  restart: unless-stopped
+  environment:
+   - PUID=1000
+   - PGID=1000
+   - TZ=America/Toronto 
+  profiles:
+   - all
+   - nzb
+  ports:
+   - "8989:8989"
+  volumes:
+   - /etc/localtime:/etc/localtime:ro
+   - /home/${USERNAME}/sonarr/config:/config
+   - /mnt/storage/downloads:/downloads
+   - /mnt/videos:/videos
+
+ nzbget:
+  image: linuxserver/nzbget:latest
+  restart: unless-stopped
+  environment:
+   - PUID=1000
+   - PGID=1000
+   - TZ=America/Toronto 
+  profiles:
+   - all
+   - nzb
+  ports:
+   - "6789:6789"
+  volumes:
+   - /etc/localtime:/etc/localtime:ro
+   - /home/${USERNAME}/nzbget/config:/config
+   - /mnt/storage/downloads:/downloads
+
+ tautulli:
+  image: tautulli/tautulli:latest
+  restart: unless-stopped
+  environment:
+   - TZ=America/Toronto 
+  profiles:
+   - all
+   - nzb
+  ports:
+   - "8181:8181"
+  volumes:
+   - /etc/localtime:/etc/localtime:ro
+   - /home/${USERNAME}/tautulli/config:/config
+
+ qbittorrent:
+  image: linuxserver/qbittorrent:latest
+  restart: unless-stopped
+  environment:
+   - PUID=1000
+   - PGID=1000
+   - TZ=America/Toronto
+   - WEBUI_PORT=6995
+  profiles:
+   - all
+   - nzb
+  ports:
+   - "6995:6995"
+   - "6881:6881"
+   - "6881:6881/udp"
+  volumes:
+   - /etc/localtime:/etc/localtime:ro
+   - /home/${USERNAME}/qbittorrent/config:/config
+   - /mnt/storage/torrent/downloads:/downloads 
+
+esphome:
+  image: esphome/esphome
+  restart: unless-stopped
+  environment:
+   - ESPHOME_DASHBOARD_USE_PING=true
+  profiles:
+   - all
+   - ha
+  ports:
+   - "6052:6052"
+  volumes:
+   - /etc/localtime:/etc/localtime:ro
+   - /home/${USERNAME}/esphome:/config
+
+ mosquitto:
+  image: eclipse-mosquitto
+  restart: unless-stopped
+  profiles:
+   - all
+   - ha
+  ports:
+   - "1883:1883"
+   - "9001:9001"
+  volumes:
+   - /etc/localtime:/etc/localtime:ro
+   - /home/${USERNAME}/mosquitto/config:/mosquitto/config
+   - /home/${USERNAME}/mosquitto/log:/mosquitto/log
+   - /home/${USERNAME}/mosquitto/data:/mosquitto/data
+   
+ deconz:
+  image: marthoc/deconz:latest
+  network_mode: "host"
+  devices:
+   - /dev/ttyACM0:/dev/ttyACM0
+  restart: unless-stopped
+  environment:
+   - DECONZ_WEB_PORT=8080
+   - DECONZ_WS_PORT=8443
+  profiles:
+   - all
+   - ha
+  ports:
+   - "1883:1883"
+   - "9001:9001"
+  volumes:
+   - /etc/localtime:/etc/localtime:ro
+   - /home/${USERNAME}/deconz:/root/.local/share/dresden-elektronik/deCONZ
+
+ hass:
+  image: homeassistant/raspberrypi4-64-homeassistant
+  network_mode: "host"
+  restart: unless-stopped
+  profiles:
+   - all
+   - ha
+  volumes:
+   - /etc/localtime:/etc/localtime:ro
+   - /home/${USERNAME}/hass/media:/media
+   - /home/${USERNAME}/hass:/config
+ 
